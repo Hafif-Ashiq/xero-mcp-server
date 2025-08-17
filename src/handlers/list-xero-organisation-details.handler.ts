@@ -1,15 +1,14 @@
-import { createXeroClient } from "../clients/xero-client.js";
+
 import { XeroClientResponse } from "../types/tool-response.js";
 import { formatError } from "../helpers/format-error.js";
 import { Organisation } from "xero-node";
 import { getClientHeaders } from "../helpers/get-client-headers.js";
+import { XeroContext } from "../types/xero-context.js";
 
-async function getOrganisationDetails(bearerToken: string): Promise<Organisation> {
-  const xeroClient = createXeroClient(bearerToken);
-  await xeroClient.authenticate();
+async function getOrganisationDetails(xero: XeroContext): Promise<Organisation> {
 
-  const response = await xeroClient.accountingApi.getOrganisations(
-    xeroClient.tenantId,
+  const response = await xero.client.accountingApi.getOrganisations(
+    xero.tenantId,
     getClientHeaders(),
   );
 
@@ -25,11 +24,11 @@ async function getOrganisationDetails(bearerToken: string): Promise<Organisation
 /**
  * List organisation details from Xero
  */
-export async function listXeroOrganisationDetails(bearerToken: string): Promise<
+export async function listXeroOrganisationDetails(xero: XeroContext): Promise<
   XeroClientResponse<Organisation>
 > {
   try {
-    const organisation = await getOrganisationDetails(bearerToken);
+    const organisation = await getOrganisationDetails(xero);
 
     return {
       result: organisation,

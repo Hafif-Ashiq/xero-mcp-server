@@ -1,8 +1,9 @@
-import { createXeroClient } from "../clients/xero-client.js";
+
 import { XeroClientResponse } from "../types/tool-response.js";
 import { formatError } from "../helpers/format-error.js";
 import { CreditNote } from "xero-node";
 import { getClientHeaders } from "../helpers/get-client-headers.js";
+import { XeroContext } from "../types/xero-context.js";
 
 interface CreditNoteLineItem {
   description: string;
@@ -11,14 +12,11 @@ interface CreditNoteLineItem {
   accountCode: string;
   taxType: string;
 }
-
-async function getCreditNote(bearerToken: string, creditNoteId: string): Promise<CreditNote | null> {
-  const xeroClient = createXeroClient(bearerToken);
-  await xeroClient.authenticate();
+async function getCreditNote(xero: XeroContext, creditNoteId: string): Promise<CreditNote | null> {
 
   // First, get the current credit note to check its status
-  const response = await xeroClient.accountingApi.getCreditNote(
-    xeroClient.tenantId,
+  const response = await xero.client.accountingApi.getCreditNote(
+    xero.tenantId,
     creditNoteId, // creditNoteId
     undefined, // unitdp
     getClientHeaders(), // options
@@ -28,15 +26,13 @@ async function getCreditNote(bearerToken: string, creditNoteId: string): Promise
 }
 
 async function updateCreditNote(
-  bearerToken: string,
+  xero: XeroContext,
   creditNoteId: string,
   lineItems?: CreditNoteLineItem[],
   reference?: string,
   contactId?: string,
   date?: string,
 ): Promise<CreditNote | null> {
-  const xeroClient = createXeroClient(bearerToken);
-  await xeroClient.authenticate();
 
   const creditNote: CreditNote = {
     lineItems: lineItems,
@@ -45,8 +41,8 @@ async function updateCreditNote(
     contact: contactId ? { contactID: contactId } : undefined,
   };
 
-  const response = await xeroClient.accountingApi.updateCreditNote(
-    xeroClient.tenantId,
+  const response = await xero.client.accountingApi.updateCreditNote(
+    xero.tenantId,
     creditNoteId, // creditNoteId
     {
       creditNotes: [creditNote],
@@ -63,7 +59,7 @@ async function updateCreditNote(
  * Update an existing credit note in Xero
  */
 export async function updateXeroCreditNote(
-  bearerToken: string,
+  xero: XeroContext,
   creditNoteId: string,
   lineItems?: CreditNoteLineItem[],
   reference?: string,
@@ -71,7 +67,7 @@ export async function updateXeroCreditNote(
   date?: string,
 ): Promise<XeroClientResponse<CreditNote>> {
   try {
-    const existingCreditNote = await getCreditNote(bearerToken, creditNoteId);
+    const existingCreditNote = await getCreditNote(xero, creditNoteId);
 
     const creditNoteStatus = existingCreditNote?.status;
 
@@ -85,7 +81,7 @@ export async function updateXeroCreditNote(
     }
 
     const updatedCreditNote = await updateCreditNote(
-      bearerToken,
+      xero,
       creditNoteId,
       lineItems,
       reference,

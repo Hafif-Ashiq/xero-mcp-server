@@ -1,17 +1,16 @@
-import { createXeroClient } from "../clients/xero-client.js";
+
 import { XeroClientResponse } from "../types/tool-response.js";
 import { formatError } from "../helpers/format-error.js";
 import { Contact, Phone } from "xero-node";
 import { getClientHeaders } from "../helpers/get-client-headers.js";
+import { XeroContext } from "../types/xero-context.js";
 
 async function createContact(
-  bearerToken: string,
+  xero: XeroContext,
   name: string,
   email?: string,
   phone?: string,
 ): Promise<Contact | undefined> {
-  const xeroClient = createXeroClient(bearerToken);
-  await xeroClient.authenticate();
 
   const contact: Contact = {
     name,
@@ -26,8 +25,8 @@ async function createContact(
       : undefined,
   };
 
-  const response = await xeroClient.accountingApi.createContacts(
-    xeroClient.tenantId,
+  const response = await xero.client.accountingApi.createContacts(
+    xero.tenantId,
     {
       contacts: [contact],
     }, //contacts
@@ -43,13 +42,13 @@ async function createContact(
  * Create a new invoice in Xero
  */
 export async function createXeroContact(
-  bearerToken: string,
+  xero: XeroContext,
   name: string,
   email?: string,
   phone?: string,
 ): Promise<XeroClientResponse<Contact>> {
   try {
-    const createdContact = await createContact(bearerToken, name, email, phone);
+    const createdContact = await createContact(xero, name, email, phone);
 
     if (!createdContact) {
       throw new Error("Contact creation failed.");

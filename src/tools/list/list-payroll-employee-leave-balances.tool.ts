@@ -7,11 +7,10 @@ const ListPayrollEmployeeLeaveBalancesTool = CreateXeroTool(
   "list-payroll-employee-leave-balances",
   "List all leave balances for a specific employee in Xero. This shows current leave balances for all leave types available to the employee, including annual, sick, and other leave types.",
   {
-    bearerToken: z.string(),
     employeeId: z.string().describe("The Xero employee ID to fetch leave balances for"),
   },
-  async ({ bearerToken, employeeId }) => {
-    const response = await listXeroPayrollEmployeeLeaveBalances(bearerToken, employeeId);
+  async ({ employeeId }, _extra, xero) => {
+    const response = await listXeroPayrollEmployeeLeaveBalances(xero, employeeId);
     if (response.isError) {
       return {
         content: [

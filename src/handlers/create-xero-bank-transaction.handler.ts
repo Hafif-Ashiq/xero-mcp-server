@@ -1,8 +1,8 @@
-import { createXeroClient } from "../clients/xero-client.js";
 import { XeroClientResponse } from "../types/tool-response.js";
 import { BankTransaction } from "xero-node";
 import { formatError } from "../helpers/format-error.js";
 import { getClientHeaders } from "../helpers/get-client-headers.js";
+import { XeroContext } from "../types/xero-context.js";
 
 interface BankTransactionLineItem {
   description: string;
@@ -15,7 +15,7 @@ interface BankTransactionLineItem {
 type BankTransactionType = "RECEIVE" | "SPEND";
 
 async function createBankTransaction(
-  bearerToken: string,
+  xero: XeroContext,
   type: BankTransactionType,
   bankAccountId: string,
   contactId: string,
@@ -23,8 +23,6 @@ async function createBankTransaction(
   reference?: string,
   date?: string,
 ): Promise<BankTransaction | undefined> {
-  const xeroClient = createXeroClient(bearerToken);
-  await xeroClient.authenticate();
 
   const bankTransaction: BankTransaction = {
     type: BankTransaction.TypeEnum[type],
@@ -40,8 +38,8 @@ async function createBankTransaction(
     status: BankTransaction.StatusEnum.AUTHORISED
   };
 
-  const response = await xeroClient.accountingApi.createBankTransactions(
-    xeroClient.tenantId, // xeroTenantId
+  const response = await xero.client.accountingApi.createBankTransactions(
+    xero.tenantId, // xeroTenantId
     {
       bankTransactions: [bankTransaction]
     }, // bankTransactions
@@ -57,7 +55,7 @@ async function createBankTransaction(
 }
 
 export async function createXeroBankTransaction(
-  bearerToken: string,
+  xero: XeroContext,
   type: BankTransactionType,
   bankAccountId: string,
   contactId: string,
@@ -66,7 +64,7 @@ export async function createXeroBankTransaction(
   date?: string
 ): Promise<XeroClientResponse<BankTransaction>> {
   try {
-    const createdTransaction = await createBankTransaction(bearerToken, type, bankAccountId, contactId, lineItems, reference, date);
+    const createdTransaction = await createBankTransaction(xero, type, bankAccountId, contactId, lineItems, reference, date);
 
     if (!createdTransaction) {
       throw new Error("Bank transaction creation failed.");

@@ -1,9 +1,10 @@
-import { createXeroClient } from "../clients/xero-client.js";
+
 import { XeroClientResponse } from "../types/tool-response.js";
 import { formatError } from "../helpers/format-error.js";
 import { getClientHeaders } from "../helpers/get-client-headers.js";
 // Import the correct types - using the proper namespace
 import { EmployeeLeave } from "xero-node/dist/gen/model/payroll-nz/employeeLeave.js";
+import { XeroContext } from "../types/xero-context.js";
 
 interface FetchEmployeeLeaveParams {
   employeeId?: string;
@@ -12,16 +13,14 @@ interface FetchEmployeeLeaveParams {
 /**
  * Internal function to fetch employee leave from Xero
  */
-async function fetchEmployeeLeave(bearerToken: string, { employeeId }: FetchEmployeeLeaveParams): Promise<EmployeeLeave[] | null> {
-  const xeroClient = createXeroClient(bearerToken);
-  await xeroClient.authenticate();
+async function fetchEmployeeLeave(xero: XeroContext, { employeeId }: FetchEmployeeLeaveParams): Promise<EmployeeLeave[] | null> {
 
   if (!employeeId) {
     throw new Error("Employee ID is required to fetch employee leave");
   }
 
-  const response = await xeroClient.payrollNZApi.getEmployeeLeaves(
-    xeroClient.tenantId,
+  const response = await xero.client.payrollNZApi.getEmployeeLeaves(
+    xero.tenantId,
     employeeId,
     {
       headers: getClientHeaders().headers
@@ -36,11 +35,11 @@ async function fetchEmployeeLeave(bearerToken: string, { employeeId }: FetchEmpl
  * @param employeeId The ID of the employee to retrieve leave for
  */
 export async function listXeroPayrollEmployeeLeave(
-  bearerToken: string,
+  xero: XeroContext,
   employeeId: string,
 ): Promise<XeroClientResponse<EmployeeLeave[]>> {
   try {
-    const leave = await fetchEmployeeLeave(bearerToken, { employeeId });
+    const leave = await fetchEmployeeLeave(xero, { employeeId });
 
     if (!leave) {
       return {

@@ -1,20 +1,19 @@
-import { createXeroClient } from "../clients/xero-client.js";
+
 import { XeroClientResponse } from "../types/tool-response.js";
 import { formatError } from "../helpers/format-error.js";
 import { Quote } from "xero-node";
 import { getClientHeaders } from "../helpers/get-client-headers.js";
+import { XeroContext } from "../types/xero-context.js";
 
 async function getQuotes(
-  bearerToken: string,
+  xero: XeroContext,
   contactId: string | undefined,
   page: number,
   quoteNumber: string | undefined,
 ): Promise<Quote[]> {
-  const xeroClient = createXeroClient(bearerToken);
-  await xeroClient.authenticate();
 
-  const quotes = await xeroClient.accountingApi.getQuotes(
-    xeroClient.tenantId,
+  const quotes = await xero.client.accountingApi.getQuotes(
+    xero.tenantId,
     undefined, // ifModifiedSince
     undefined, // dateFrom
     undefined, // dateTo
@@ -34,13 +33,13 @@ async function getQuotes(
  * List all quotes from Xero
  */
 export async function listXeroQuotes(
-  bearerToken: string,
+  xero: XeroContext,
   page: number = 1,
   contactId?: string,
   quoteNumber?: string,
 ): Promise<XeroClientResponse<Quote[]>> {
   try {
-    const quotes = await getQuotes(bearerToken, contactId, page, quoteNumber);
+    const quotes = await getQuotes(xero, contactId, page, quoteNumber);
 
     return {
       result: quotes,

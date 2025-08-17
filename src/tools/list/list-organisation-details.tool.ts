@@ -1,16 +1,13 @@
 import { listXeroOrganisationDetails } from "../../handlers/list-xero-organisation-details.handler.js";
 import { getExternalLink } from "../../helpers/get-external-link.js";
 import { CreateXeroTool } from "../../helpers/create-xero-tool.js";
-import { z } from "zod";
 
 const ListOrganisationDetailsTool = CreateXeroTool(
   "list-organisation-details",
   "Lists the organisation details from Xero. Use this tool to get information about the current Xero organisation.",
-  {
-    bearerToken: z.string(),
-  },
-  async ({ bearerToken }) => {
-    const response = await listXeroOrganisationDetails(bearerToken);
+  {},
+  async (_, _extra, xero) => {
+    const response = await listXeroOrganisationDetails(xero);
     if (response.error !== null) {
       return {
         content: [

@@ -47,15 +47,14 @@ const ListPaymentsTool = CreateXeroTool(
   Ask the user if they want to see payments for a specific invoice, contact, payment or reference before running.
   If many payments are returned, ask the user if they want to see the next page.`,
   {
-    bearerToken: z.string(),
     page: z.number().default(1),
     invoiceNumber: z.string().optional(),
     invoiceId: z.string().optional(),
     paymentId: z.string().optional(),
     reference: z.string().optional(),
   },
-  async ({ bearerToken, page, invoiceNumber, invoiceId, paymentId, reference }) => {
-    const response = await listXeroPayments(bearerToken, page, {
+  async ({ page, invoiceNumber, invoiceId, paymentId, reference }, _extra, xero) => {
+    const response = await listXeroPayments(xero, page, {
       invoiceNumber,
       invoiceId,
       paymentId,

@@ -6,13 +6,12 @@ const ListContactsTool = CreateXeroTool(
   "list-contacts",
   "List all contacts in Xero. This includes Suppliers and Customers.",
   {
-    bearerToken: z.string(),
     page: z.number().optional().describe("Optional page number to retrieve for pagination. \
       If not provided, the first page will be returned. If 100 contacts are returned, \
       call this tool again with the next page number."),
   },
-  async ({ bearerToken, page }) => {
-    const response = await listXeroContacts(bearerToken, page);
+  async ({ page }, _extra, xero) => {
+    const response = await listXeroContacts(xero, page);
 
     if (response.isError) {
       return {

@@ -1,11 +1,12 @@
-import { createXeroClient } from "../clients/xero-client.js";
+
 import { XeroClientResponse } from "../types/tool-response.js";
 import { formatError } from "../helpers/format-error.js";
 import { Contact, Phone, Address, Contacts } from "xero-node";
 import { getClientHeaders } from "../helpers/get-client-headers.js";
+import { XeroContext } from "../types/xero-context.js";
 
 async function updateContact(
-  bearerToken: string,
+  xero: XeroContext,
   name: string,
   firstName: string | undefined,
   lastName: string | undefined,
@@ -14,8 +15,6 @@ async function updateContact(
   address: Address | undefined,
   contactId: string,
 ): Promise<Contact | undefined> {
-  const xeroClient = createXeroClient(bearerToken);
-  await xeroClient.authenticate();
 
   const contact: Contact = {
     name,
@@ -49,8 +48,8 @@ async function updateContact(
     contacts: [contact],
   };
 
-  const response = await xeroClient.accountingApi.updateContact(
-    xeroClient.tenantId,
+  const response = await xero.client.accountingApi.updateContact(
+    xero.tenantId,
     contactId, // contactId
     contacts, // contacts
     undefined, // idempotencyKey
@@ -65,7 +64,7 @@ async function updateContact(
  * Create a new invoice in Xero
  */
 export async function updateXeroContact(
-  bearerToken: string,
+  xero: XeroContext,
   contactId: string,
   name: string,
   firstName?: string,
@@ -76,7 +75,7 @@ export async function updateXeroContact(
 ): Promise<XeroClientResponse<Contact>> {
   try {
     const updatedContact = await updateContact(
-      bearerToken,
+      xero,
       name,
       firstName,
       lastName,

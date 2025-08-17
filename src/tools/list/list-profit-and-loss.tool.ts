@@ -1,12 +1,11 @@
-import { z } from "zod";
 import { listXeroProfitAndLoss } from "../../handlers/list-xero-profit-and-loss.handler.js";
 import { CreateXeroTool } from "../../helpers/create-xero-tool.js";
+import { z } from "zod";
 
 const ListProfitAndLossTool = CreateXeroTool(
   "list-profit-and-loss",
   "Lists profit and loss report in Xero. This provides a summary of revenue, expenses, and profit or loss over a specified period of time.",
   {
-    bearerToken: z.string(),
     fromDate: z.string().optional().describe("Optional start date in YYYY-MM-DD format"),
     toDate: z.string().optional().describe("Optional end date in YYYY-MM-DD format"),
     periods: z.number().optional().describe("Optional number of periods to compare"),
@@ -14,8 +13,8 @@ const ListProfitAndLossTool = CreateXeroTool(
     standardLayout: z.boolean().optional().describe("Optional flag to use standard layout"),
     paymentsOnly: z.boolean().optional().describe("Optional flag to include only accounts with payments"),
   },
-  async ({ bearerToken, fromDate, toDate, periods, timeframe, standardLayout, paymentsOnly }) => {
-    const response = await listXeroProfitAndLoss(bearerToken, fromDate, toDate, periods, timeframe, standardLayout, paymentsOnly);
+  async ({ fromDate, toDate, periods, timeframe, standardLayout, paymentsOnly }, _extra, xero) => {
+    const response = await listXeroProfitAndLoss(xero, fromDate, toDate, periods, timeframe, standardLayout, paymentsOnly);
 
     if (response.error !== null) {
       return {

@@ -1,22 +1,21 @@
-import { createXeroClient } from "../clients/xero-client.js";
+
 import { XeroClientResponse } from "../types/tool-response.js";
 import { formatError } from "../helpers/format-error.js";
 import { getClientHeaders } from "../helpers/get-client-headers.js";
 import { TrackingCategory } from "xero-node";
+import { XeroContext } from "../types/xero-context.js";
 
 async function createTrackingCategory(
-  bearerToken: string,
+  xero: XeroContext,
   name: string
 ): Promise<TrackingCategory | undefined> {
-  const xeroClient = createXeroClient(bearerToken);
-  await xeroClient.authenticate();
 
   const trackingCategory: TrackingCategory = {
     name: name
   };
 
-  const response = await xeroClient.accountingApi.createTrackingCategory(
-    xeroClient.tenantId, // xeroTenantId
+  const response = await xero.client.accountingApi.createTrackingCategory(
+    xero.tenantId, // xeroTenantId
     trackingCategory,
     undefined, // idempotencyKey
     getClientHeaders() // options
@@ -28,11 +27,11 @@ async function createTrackingCategory(
 }
 
 export async function createXeroTrackingCategory(
-  bearerToken: string,
+  xero: XeroContext,
   name: string
 ): Promise<XeroClientResponse<TrackingCategory>> {
   try {
-    const createdTrackingCategory = await createTrackingCategory(bearerToken, name);
+    const createdTrackingCategory = await createTrackingCategory(xero, name);
 
     if (!createdTrackingCategory) {
       throw new Error("Tracking Category creation failed.");

@@ -20,7 +20,6 @@ const UpdateQuoteTool = CreateXeroTool(
  This deep link can be used to view the quote in Xero directly. \
  This link should be displayed to the user.",
   {
-    bearerToken: z.string(),
     quoteId: z.string(),
     lineItems: z.array(lineItemSchema).optional().describe(
       "All line items must be provided. Any line items not provided will be removed. Including existing line items. \
@@ -37,7 +36,6 @@ const UpdateQuoteTool = CreateXeroTool(
   },
   async (
     {
-      bearerToken,
       quoteId,
       lineItems,
       reference,
@@ -48,10 +46,12 @@ const UpdateQuoteTool = CreateXeroTool(
       contactId,
       date,
       expiryDate,
-    }
+    },
+    _extra,
+    xero
   ) => {
     const result = await updateXeroQuote(
-      bearerToken,
+      xero,
       quoteId,
       lineItems,
       reference,
@@ -77,7 +77,7 @@ const UpdateQuoteTool = CreateXeroTool(
     const quote = result.result;
 
     const deepLink = quote.quoteID
-      ? await getDeepLink(DeepLinkType.QUOTE, quote.quoteID, bearerToken)
+      ? await getDeepLink(DeepLinkType.QUOTE, quote.quoteID, xero)
       : null;
 
     return {

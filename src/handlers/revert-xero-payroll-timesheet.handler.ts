@@ -1,16 +1,14 @@
 import { Timesheet } from "xero-node/dist/gen/model/payroll-nz/timesheet.js";
 
-import { createXeroClient } from "../clients/xero-client.js";
 import { formatError } from "../helpers/format-error.js";
 import { XeroClientResponse } from "../types/tool-response.js";
+import { XeroContext } from "../types/xero-context.js";
 
-async function revertTimesheet(bearerToken: string, timesheetID: string): Promise<Timesheet | null> {
-  const xeroClient = createXeroClient(bearerToken);
-  await xeroClient.authenticate();
+async function revertTimesheet(xero: XeroContext, timesheetID: string): Promise<Timesheet | null> {
 
   // Call the revertTimesheet endpoint from the PayrollNZApi
-  const revertedTimesheet = await xeroClient.payrollNZApi.revertTimesheet(
-    xeroClient.tenantId,
+  const revertedTimesheet = await xero.client.payrollNZApi.revertTimesheet(
+    xero.tenantId,
     timesheetID,
   );
 
@@ -20,11 +18,11 @@ async function revertTimesheet(bearerToken: string, timesheetID: string): Promis
 /**
  * Revert a payroll timesheet to draft in Xero
  */
-export async function revertXeroPayrollTimesheet(bearerToken: string, timesheetID: string): Promise<
+export async function revertXeroPayrollTimesheet(xero: XeroContext, timesheetID: string): Promise<
   XeroClientResponse<Timesheet | null>
 > {
   try {
-    const revertedTimesheet = await revertTimesheet(bearerToken, timesheetID);
+    const revertedTimesheet = await revertTimesheet(xero, timesheetID);
 
     return {
       result: revertedTimesheet,

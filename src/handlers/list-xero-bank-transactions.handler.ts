@@ -1,18 +1,17 @@
-import { createXeroClient } from "../clients/xero-client.js";
+
 import { BankTransaction } from "xero-node";
 import { getClientHeaders } from "../helpers/get-client-headers.js";
 import { XeroClientResponse } from "../types/tool-response.js";
 import { formatError } from "../helpers/format-error.js";
+import { XeroContext } from "../types/xero-context.js";
 
 async function getBankTransactions(
-  bearerToken: string,
+  xero: XeroContext,
   page: number,
   bankAccountId?: string,
 ): Promise<BankTransaction[]> {
-  const xeroClient = createXeroClient(bearerToken);
-  await xeroClient.authenticate();
 
-  const response = await xeroClient.accountingApi.getBankTransactions(xeroClient.tenantId,
+  const response = await xero.client.accountingApi.getBankTransactions(xero.tenantId,
     undefined, // ifModifiedSince
     bankAccountId ? `BankAccount.AccountID=guid("${bankAccountId}")` : undefined, // where
     "Date DESC", // order
@@ -26,12 +25,12 @@ async function getBankTransactions(
 }
 
 export async function listXeroBankTransactions(
-  bearerToken: string,
+  xero: XeroContext,
   page: number = 1,
   bankAccountId?: string
 ): Promise<XeroClientResponse<BankTransaction[]>> {
   try {
-    const bankTransactions = await getBankTransactions(bearerToken, page, bankAccountId);
+    const bankTransactions = await getBankTransactions(xero, page, bankAccountId);
 
     return {
       result: bankTransactions,

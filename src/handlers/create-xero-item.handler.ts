@@ -1,8 +1,9 @@
-import { createXeroClient } from "../clients/xero-client.js";
+
 import { XeroClientResponse } from "../types/tool-response.js";
 import { formatError } from "../helpers/format-error.js";
 import { Item, Items } from "xero-node";
 import { getClientHeaders } from "../helpers/get-client-headers.js";
+import { XeroContext } from "../types/xero-context.js";
 
 interface ItemDetails {
   code: string;
@@ -24,11 +25,9 @@ interface ItemDetails {
 }
 
 async function createItem(
-  bearerToken: string,
+  xero: XeroContext,
   itemDetails: ItemDetails
 ): Promise<Item | null> {
-  const xeroClient = createXeroClient(bearerToken);
-  await xeroClient.authenticate();
 
   const item: Item = {
     code: itemDetails.code,
@@ -59,8 +58,8 @@ async function createItem(
     items: [item],
   };
 
-  const response = await xeroClient.accountingApi.createItems(
-    xeroClient.tenantId,
+  const response = await xero.client.accountingApi.createItems(
+    xero.tenantId,
     items, // items
     true, // summarizeErrors
     undefined, // unitdp
@@ -75,11 +74,11 @@ async function createItem(
  * Create an item in Xero
  */
 export async function createXeroItem(
-  bearerToken: string,
+  xero: XeroContext,
   itemDetails: ItemDetails
 ): Promise<XeroClientResponse<Item | null>> {
   try {
-    const item = await createItem(bearerToken, itemDetails);
+    const item = await createItem(xero, itemDetails);
 
     return {
       result: item,

@@ -3,20 +3,19 @@ import { XeroClientResponse } from "../types/tool-response.js";
 import { formatError } from "../helpers/format-error.js";
 import { getClientHeaders } from "../helpers/get-client-headers.js";
 import { ReportWithRow } from "xero-node";
+import { XeroContext } from "../types/xero-context.js";
 
 /**
  * Internal function to fetch trial balance data from Xero
  */
 async function fetchTrialBalance(
-  bearerToken: string,
+  xero: XeroContext,
   date?: string,
   paymentsOnly?: boolean,
 ): Promise<ReportWithRow | null> {
-  const xeroClient = createXeroClient(bearerToken);
-  await xeroClient.authenticate();
 
-  const response = await xeroClient.accountingApi.getReportTrialBalance(
-    xeroClient.tenantId,
+  const response = await xero.client.accountingApi.getReportTrialBalance(
+    xero.tenantId,
     date, // Optional date parameter in YYYY-MM-DD format
     paymentsOnly, // Optional boolean to include only accounts with payments
     getClientHeaders(),
@@ -31,12 +30,12 @@ async function fetchTrialBalance(
  * @param paymentsOnly Optional boolean to include only accounts with payments
  */
 export async function listXeroTrialBalance(
-  bearerToken: string,
+  xero: XeroContext,
   date?: string,
   paymentsOnly?: boolean,
 ): Promise<XeroClientResponse<ReportWithRow>> {
   try {
-    const trialBalance = await fetchTrialBalance(bearerToken, date, paymentsOnly);
+    const trialBalance = await fetchTrialBalance(xero, date, paymentsOnly);
 
     if (!trialBalance) {
       return {

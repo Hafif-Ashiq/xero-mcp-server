@@ -33,7 +33,6 @@ const UpdateInvoiceTool = CreateXeroTool(
  This deep link can be used to view the contact in Xero directly. \
  This link should be displayed to the user.",
   {
-    bearerToken: z.string(),
     invoiceId: z.string().describe("The ID of the invoice to update."),
     lineItems: z.array(lineItemSchema).optional().describe(
       "All line items must be provided. Any line items not provided will be removed. Including existing line items. \
@@ -47,7 +46,6 @@ const UpdateInvoiceTool = CreateXeroTool(
   },
   async (
     {
-      bearerToken,
       invoiceId,
       lineItems,
       reference,
@@ -55,7 +53,6 @@ const UpdateInvoiceTool = CreateXeroTool(
       date,
       contactId,
     }: {
-      bearerToken: string;
       invoiceId: string;
       lineItems?: Array<{
         description: string;
@@ -69,10 +66,11 @@ const UpdateInvoiceTool = CreateXeroTool(
       date?: string;
       contactId?: string;
     },
-    //_extra: { signal: AbortSignal },
+    _extra,
+    xero
   ) => {
     const result = await updateXeroInvoice(
-      bearerToken,
+      xero,
       invoiceId,
       lineItems,
       reference,
@@ -94,7 +92,7 @@ const UpdateInvoiceTool = CreateXeroTool(
     const invoice = result.result;
 
     const deepLink = invoice.invoiceID
-      ? await getDeepLink(DeepLinkType.INVOICE, invoice.invoiceID, bearerToken)
+      ? await getDeepLink(DeepLinkType.INVOICE, invoice.invoiceID, xero)
       : null;
 
     return {

@@ -9,11 +9,10 @@ const DeletePayrollTimesheetTool = CreateXeroTool(
   "delete-timesheet",
   `Delete an existing payroll timesheet in Xero by its ID.`,
   {
-    bearerToken: z.string(),
     timesheetID: z.string().describe("The ID of the timesheet to delete."),
   },
-  async ({ bearerToken, timesheetID }) => {
-    const response = await deleteXeroPayrollTimesheet(bearerToken, timesheetID);
+  async ({ timesheetID }, _extra, xero) => {
+    const response = await deleteXeroPayrollTimesheet(xero, timesheetID);
 
     if (response.isError) {
       return {

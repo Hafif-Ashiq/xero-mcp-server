@@ -1,8 +1,9 @@
-import { createXeroClient } from "../clients/xero-client.js";
+
 import { XeroClientResponse } from "../types/tool-response.js";
 import { formatError } from "../helpers/format-error.js";
 import { Invoice, LineItemTracking } from "xero-node";
 import { getClientHeaders } from "../helpers/get-client-headers.js";
+import { XeroContext } from "../types/xero-context.js";
 
 interface InvoiceLineItem {
   description: string;
@@ -15,15 +16,13 @@ interface InvoiceLineItem {
 }
 
 async function createInvoice(
-  bearerToken: string,
+  xero: XeroContext,
   contactId: string,
   lineItems: InvoiceLineItem[],
   type: Invoice.TypeEnum,
   reference: string | undefined,
   date: string | undefined
 ): Promise<Invoice | undefined> {
-  const xeroClient = createXeroClient(bearerToken);
-  await xeroClient.authenticate();
 
   const invoice: Invoice = {
     type: type,
@@ -39,8 +38,8 @@ async function createInvoice(
     status: Invoice.StatusEnum.DRAFT,
   };
 
-  const response = await xeroClient.accountingApi.createInvoices(
-    xeroClient.tenantId,
+  const response = await xero.client.accountingApi.createInvoices(
+    xero.tenantId,
     {
       invoices: [invoice],
     }, // invoices
@@ -57,7 +56,7 @@ async function createInvoice(
  * Create a new invoice in Xero
  */
 export async function createXeroInvoice(
-  bearerToken: string,
+  xero: XeroContext,
   contactId: string,
   lineItems: InvoiceLineItem[],
   type: Invoice.TypeEnum = Invoice.TypeEnum.ACCREC,
@@ -66,7 +65,7 @@ export async function createXeroInvoice(
 ): Promise<XeroClientResponse<Invoice>> {
   try {
     const createdInvoice = await createInvoice(
-      bearerToken,
+      xero,
       contactId,
       lineItems,
       type,

@@ -1,8 +1,8 @@
 import { TrackingOption } from "xero-node";
-import { createXeroClient } from "../clients/xero-client.js";
 import { formatError } from "../helpers/format-error.js";
 import { getClientHeaders } from "../helpers/get-client-headers.js";
 import { XeroClientResponse } from "../types/tool-response.js";
+import { XeroContext } from "../types/xero-context.js";
 
 type TrackingOptionStatus = "ACTIVE" | "ARCHIVED";
 
@@ -12,12 +12,10 @@ interface TrackingOptionItem {
   status?: TrackingOptionStatus
 }
 
-async function getTrackingOptions(bearerToken: string, trackingCategoryId: string): Promise<TrackingOption[] | undefined> {
-  const xeroClient = createXeroClient(bearerToken);
-  await xeroClient.authenticate();
+async function getTrackingOptions(xero: XeroContext, trackingCategoryId: string): Promise<TrackingOption[] | undefined> {
 
-  const response = await xeroClient.accountingApi.getTrackingCategory(
-    xeroClient.tenantId,
+  const response = await xero.client.accountingApi.getTrackingCategory(
+    xero.tenantId,
     trackingCategoryId,
     getClientHeaders()
   );
@@ -26,15 +24,13 @@ async function getTrackingOptions(bearerToken: string, trackingCategoryId: strin
 }
 
 async function updateTrackingOption(
-  bearerToken: string,
+  xero: XeroContext,
   trackingCategoryId: string,
   trackingOptionId: string,
   existingTrackingOption: TrackingOption,
   name?: string,
   status?: TrackingOptionStatus
 ): Promise<TrackingOption | undefined> {
-  const xeroClient = createXeroClient(bearerToken);
-  await xeroClient.authenticate();
 
   const trackingOption: TrackingOption = {
     trackingOptionID: trackingOptionId,
@@ -42,8 +38,8 @@ async function updateTrackingOption(
     status: status ? TrackingOption.StatusEnum[status] : existingTrackingOption.status
   };
 
-  await xeroClient.accountingApi.updateTrackingOptions(
-    xeroClient.tenantId,
+  await xero.client.accountingApi.updateTrackingOptions(
+    xero.tenantId,
     trackingCategoryId,
     trackingOptionId,
     trackingOption,
@@ -55,13 +51,13 @@ async function updateTrackingOption(
 }
 
 export async function updateXeroTrackingOption(
-  bearerToken: string,
+  xero: XeroContext,
   trackingCategoryId: string,
   options: TrackingOptionItem[]
 ): Promise<XeroClientResponse<TrackingOption[]>> {
   try {
 
-    const existingTrackingOptions = await getTrackingOptions(bearerToken, trackingCategoryId);
+    const existingTrackingOptions = await getTrackingOptions(xero, trackingCategoryId);
 
     if (!existingTrackingOptions) {
       throw new Error("Could not find tracking options.");
@@ -72,7 +68,7 @@ export async function updateXeroTrackingOption(
         .find(existingOption => existingOption.trackingOptionID === option.trackingOptionId);
 
       return existingTrackingOption
-        ? await updateTrackingOption(bearerToken, trackingCategoryId, option.trackingOptionId, existingTrackingOption, option.name, option.status)
+        ? await updateTrackingOption(xero, trackingCategoryId, option.trackingOptionId, existingTrackingOption, option.name, option.status)
         : undefined;
     }));
 

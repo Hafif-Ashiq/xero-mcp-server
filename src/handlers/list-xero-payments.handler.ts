@@ -1,11 +1,12 @@
-import { createXeroClient } from "../clients/xero-client.js";
+
 import { XeroClientResponse } from "../types/tool-response.js";
 import { formatError } from "../helpers/format-error.js";
 import { Payment } from "xero-node";
 import { getClientHeaders } from "../helpers/get-client-headers.js";
+import { XeroContext } from "../types/xero-context.js";
 
 async function getPayments(
-  bearerToken: string,
+  xero: XeroContext,
   page: number = 1,
   {
     invoiceNumber,
@@ -19,8 +20,6 @@ async function getPayments(
     reference?: string;
   },
 ): Promise<Payment[]> {
-  const xeroClient = createXeroClient(bearerToken);
-  await xeroClient.authenticate();
 
   // Build where clause for filtering
   const whereConditions: string[] = [];
@@ -42,8 +41,8 @@ async function getPayments(
   const where =
     whereConditions.length > 0 ? whereConditions.join(" AND ") : undefined;
 
-  const response = await xeroClient.accountingApi.getPayments(
-    xeroClient.tenantId,
+  const response = await xero.client.accountingApi.getPayments(
+    xero.tenantId,
     undefined, // ifModifiedSince
     where,
     "UpdatedDateUTC DESC", // order
@@ -59,7 +58,7 @@ async function getPayments(
  * List payments from Xero
  */
 export async function listXeroPayments(
-  bearerToken: string,
+  xero: XeroContext,
   page: number = 1,
   {
     invoiceNumber,
@@ -74,7 +73,7 @@ export async function listXeroPayments(
   },
 ): Promise<XeroClientResponse<Payment[]>> {
   try {
-    const payments = await getPayments(bearerToken, page, {
+    const payments = await getPayments(xero, page, {
       invoiceNumber,
       invoiceId,
       paymentId,

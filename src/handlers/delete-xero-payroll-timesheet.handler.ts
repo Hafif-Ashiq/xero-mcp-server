@@ -1,13 +1,12 @@
-import { createXeroClient } from "../clients/xero-client.js";
+
 import { formatError } from "../helpers/format-error.js";
 import { XeroClientResponse } from "../types/tool-response.js";
+import { XeroContext } from "../types/xero-context.js";
 
-async function deleteTimesheet(bearerToken: string, timesheetID: string): Promise<boolean> {
-  const xeroClient = createXeroClient(bearerToken);
-  await xeroClient.authenticate();
+async function deleteTimesheet(xero: XeroContext, timesheetID: string): Promise<boolean> {
 
   // Call the deleteTimesheet endpoint from the PayrollNZApi
-  await xeroClient.payrollNZApi.deleteTimesheet(xeroClient.tenantId, timesheetID);
+  await xero.client.payrollNZApi.deleteTimesheet(xero.tenantId, timesheetID);
 
   return true;
 }
@@ -15,11 +14,11 @@ async function deleteTimesheet(bearerToken: string, timesheetID: string): Promis
 /**
  * Delete an existing payroll timesheet in Xero
  */
-export async function deleteXeroPayrollTimesheet(bearerToken: string, timesheetID: string): Promise<
+export async function deleteXeroPayrollTimesheet(xero: XeroContext, timesheetID: string): Promise<
   XeroClientResponse<boolean>
 > {
   try {
-    await deleteTimesheet(bearerToken, timesheetID);
+    await deleteTimesheet(xero, timesheetID);
 
     return {
       result: true,

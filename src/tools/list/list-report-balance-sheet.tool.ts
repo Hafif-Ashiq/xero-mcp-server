@@ -1,13 +1,11 @@
 import { z } from "zod";
 import { listXeroReportBalanceSheet } from "../../handlers/list-xero-report-balance-sheet.handler.js";
 import { CreateXeroTool } from "../../helpers/create-xero-tool.js";
-import { ListReportBalanceSheetParams } from "../../types/list-report-balance-sheet-params.js";
 
 const ListReportBalanceSheetTool = CreateXeroTool(
   "list-report-balance-sheet",
   "List the Balance Sheet report from Xero.",
   {
-    bearerToken: z.string(),
     date: z.string().optional().describe("Optional date in YYYY-MM-DD format"),
     periods: z.number().optional().describe("Optional number of periods to compare"),
     timeframe: z.enum(["MONTH", "QUARTER", "YEAR"]).optional().describe("Optional timeframe for the report (MONTH, QUARTER, YEAR)"),
@@ -16,8 +14,8 @@ const ListReportBalanceSheetTool = CreateXeroTool(
     standardLayout: z.boolean().optional().describe("Optional flag to use standard layout"),
     paymentsOnly: z.boolean().optional().describe("Optional flag to include only accounts with payments"),
   },
-  async ({ bearerToken, date, periods, timeframe, trackingOptionID1, trackingOptionID2, standardLayout, paymentsOnly }) => {
-    const response = await listXeroReportBalanceSheet(bearerToken, {
+  async ({ date, periods, timeframe, trackingOptionID1, trackingOptionID2, standardLayout, paymentsOnly }, _extra, xero) => {
+    const response = await listXeroReportBalanceSheet(xero, {
       date,
       periods,
       timeframe,

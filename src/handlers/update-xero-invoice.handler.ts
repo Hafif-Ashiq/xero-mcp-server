@@ -1,8 +1,9 @@
-import { createXeroClient } from "../clients/xero-client.js";
+
 import { XeroClientResponse } from "../types/tool-response.js";
 import { formatError } from "../helpers/format-error.js";
 import { Invoice, LineItemTracking } from "xero-node";
 import { getClientHeaders } from "../helpers/get-client-headers.js";
+import { XeroContext } from "../types/xero-context.js";
 
 interface InvoiceLineItem {
   description: string;
@@ -13,14 +14,11 @@ interface InvoiceLineItem {
   itemCode?: string;
   tracking?: LineItemTracking[];
 }
-
-async function getInvoice(bearerToken: string, invoiceId: string): Promise<Invoice | undefined> {
-  const xeroClient = createXeroClient(bearerToken);
-  await xeroClient.authenticate();
+async function getInvoice(xero: XeroContext, invoiceId: string): Promise<Invoice | undefined> {
 
   // First, get the current invoice to check its status
-  const response = await xeroClient.accountingApi.getInvoice(
-    xeroClient.tenantId,
+  const response = await xero.client.accountingApi.getInvoice(
+    xero.tenantId,
     invoiceId, // invoiceId
     undefined, // unitdp
     getClientHeaders(), // options
@@ -30,7 +28,7 @@ async function getInvoice(bearerToken: string, invoiceId: string): Promise<Invoi
 }
 
 async function updateInvoice(
-  bearerToken: string,
+  xero: XeroContext,
   invoiceId: string,
   lineItems?: InvoiceLineItem[],
   reference?: string,
@@ -38,8 +36,6 @@ async function updateInvoice(
   date?: string,
   contactId?: string,
 ): Promise<Invoice | undefined> {
-  const xeroClient = createXeroClient(bearerToken);
-  await xeroClient.authenticate();
 
   const invoice: Invoice = {
     lineItems: lineItems,
@@ -49,8 +45,8 @@ async function updateInvoice(
     contact: contactId ? { contactID: contactId } : undefined,
   };
 
-  const response = await xeroClient.accountingApi.updateInvoice(
-    xeroClient.tenantId,
+  const response = await xero.client.accountingApi.updateInvoice(
+    xero.tenantId,
     invoiceId, // invoiceId
     {
       invoices: [invoice],
@@ -67,7 +63,7 @@ async function updateInvoice(
  * Update an existing invoice in Xero
  */
 export async function updateXeroInvoice(
-  bearerToken: string,
+  xero: XeroContext,
   invoiceId: string,
   lineItems?: InvoiceLineItem[],
   reference?: string,
@@ -76,7 +72,7 @@ export async function updateXeroInvoice(
   contactId?: string,
 ): Promise<XeroClientResponse<Invoice>> {
   try {
-    const existingInvoice = await getInvoice(bearerToken, invoiceId);
+    const existingInvoice = await getInvoice(xero, invoiceId);
 
     const invoiceStatus = existingInvoice?.status;
 
@@ -90,7 +86,7 @@ export async function updateXeroInvoice(
     }
 
     const updatedInvoice = await updateInvoice(
-      bearerToken,
+      xero,
       invoiceId,
       lineItems,
       reference,

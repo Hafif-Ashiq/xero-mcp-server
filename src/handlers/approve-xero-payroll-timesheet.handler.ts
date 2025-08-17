@@ -1,16 +1,15 @@
 import { Timesheet } from "xero-node/dist/gen/model/payroll-nz/timesheet.js";
 
-import { createXeroClient } from "../clients/xero-client.js";
 import { formatError } from "../helpers/format-error.js";
 import { XeroClientResponse } from "../types/tool-response.js";
+import { XeroContext } from "../types/xero-context.js";
 
-async function approveTimesheet(timesheetID: string, bearerToken: string): Promise<Timesheet | null> {
-  const xeroClient = createXeroClient(bearerToken);
-  await xeroClient.authenticate();
+async function approveTimesheet(xero: XeroContext, timesheetID: string): Promise<Timesheet | null> {
+
 
   // Call the approveTimesheet endpoint from the PayrollNZApi
-  const approvedTimesheet = await xeroClient.payrollNZApi.approveTimesheet(
-    xeroClient.tenantId,
+  const approvedTimesheet = await xero.client.payrollNZApi.approveTimesheet(
+    xero.tenantId,
     timesheetID,
   );
 
@@ -20,11 +19,11 @@ async function approveTimesheet(timesheetID: string, bearerToken: string): Promi
 /**
  * Approve a payroll timesheet in Xero
  */
-export async function approveXeroPayrollTimesheet(bearerToken: string, timesheetID: string): Promise<
+export async function approveXeroPayrollTimesheet(xero: XeroContext, timesheetID: string): Promise<
   XeroClientResponse<Timesheet | null>
 > {
   try {
-    const approvedTimesheet = await approveTimesheet(bearerToken, timesheetID);
+    const approvedTimesheet = await approveTimesheet(xero, timesheetID);
 
     return {
       result: approvedTimesheet,

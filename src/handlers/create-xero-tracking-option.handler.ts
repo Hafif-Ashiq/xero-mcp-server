@@ -1,19 +1,18 @@
-import { createXeroClient } from "../clients/xero-client.js";
+
 import { XeroClientResponse } from "../types/tool-response.js";
 import { formatError } from "../helpers/format-error.js";
 import { getClientHeaders } from "../helpers/get-client-headers.js";
 import { TrackingOption } from "xero-node";
+import { XeroContext } from "../types/xero-context.js";
 
 async function createTrackingOption(
-  bearerToken: string,
+  xero: XeroContext,
   trackingCategoryId: string,
   name: string
 ): Promise<TrackingOption | undefined> {
-  const xeroClient = createXeroClient(bearerToken);
-  await xeroClient.authenticate();
 
-  const response = await xeroClient.accountingApi.createTrackingOptions(
-    xeroClient.tenantId,
+  const response = await xero.client.accountingApi.createTrackingOptions(
+    xero.tenantId,
     trackingCategoryId,
     {
       name: name
@@ -28,13 +27,13 @@ async function createTrackingOption(
 }
 
 export async function createXeroTrackingOptions(
-  bearerToken: string,
+  xero: XeroContext,
   trackingCategoryId: string,
   optionNames: string[]
 ): Promise<XeroClientResponse<TrackingOption[]>> {
   try {
     const createdOptions = await Promise.all(
-      optionNames.map(async optionName => await createTrackingOption(bearerToken, trackingCategoryId, optionName))
+      optionNames.map(async optionName => await createTrackingOption(xero, trackingCategoryId, optionName))
     );
 
     return {

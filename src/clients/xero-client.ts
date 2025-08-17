@@ -5,7 +5,7 @@ import {
   XeroClient,
 } from "xero-node";
 
-abstract class MCPXeroClient extends XeroClient {
+export abstract class MCPXeroClient extends XeroClient {
   public tenantId: string;
   private shortCode: string;
 
@@ -69,9 +69,10 @@ abstract class MCPXeroClient extends XeroClient {
 class BearerTokenXeroClient extends MCPXeroClient {
   private readonly bearerToken: string;
 
-  constructor(config: { bearerToken: string }) {
+  constructor(config: { bearerToken: string, tenantId: string }) {
     super();
     this.bearerToken = config.bearerToken;
+    this.tenantId = config.tenantId;
   }
 
   async authenticate(): Promise<void> {
@@ -90,9 +91,18 @@ class BearerTokenXeroClient extends MCPXeroClient {
           },
         },
       );
-
+      let foundTenantId = false;
       if (connectionsResponse.data && connectionsResponse.data.length > 0) {
-        this.tenantId = connectionsResponse.data[0].tenantId;
+        for (const connection of connectionsResponse.data) {
+          if (connection.tenantId === this.tenantId) {
+            this.tenantId = connection.tenantId;
+            foundTenantId = true;
+            break;
+          }
+        }
+      }
+      if (!foundTenantId) {
+        throw new Error(`Tenant ID ${this.tenantId} not found in Xero connections. Please check your tenant ID and try again.`);
       }
     } catch (error) {
       const axiosError = error as AxiosError;
@@ -109,13 +119,17 @@ class BearerTokenXeroClient extends MCPXeroClient {
 }
 
 // Factory function to create Xero client with bearer token
-export function createXeroClient(bearerToken: string): MCPXeroClient {
+export function createXeroClient(bearerToken: string, tenantId: string): MCPXeroClient {
   if (!bearerToken || bearerToken.trim() === "") {
     throw Error("Bearer token must be provided for Xero authentication");
+  }
+  if (!tenantId || tenantId.trim() === "") {
+    throw Error("Tenant ID must be provided for Xero authentication");
   }
 
   return new BearerTokenXeroClient({
     bearerToken: bearerToken,
+    tenantId: tenantId,
   });
 }
 

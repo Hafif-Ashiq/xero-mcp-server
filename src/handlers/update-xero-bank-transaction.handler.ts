@@ -1,8 +1,9 @@
-import { createXeroClient } from "../clients/xero-client.js";
+
 import { formatError } from "../helpers/format-error.js";
 import { getClientHeaders } from "../helpers/get-client-headers.js";
 import { XeroClientResponse } from "../types/tool-response.js";
 import { BankTransaction } from "xero-node";
+import { XeroContext } from "../types/xero-context.js";
 
 interface BankTransactionLineItem {
   description: string;
@@ -14,12 +15,10 @@ interface BankTransactionLineItem {
 
 type BankTransactionType = "RECEIVE" | "SPEND";
 
-async function getBankTransaction(bearerToken: string, bankTransactionId: string): Promise<BankTransaction | undefined> {
-  const xeroClient = createXeroClient(bearerToken);
-  await xeroClient.authenticate();
+async function getBankTransaction(xero: XeroContext, bankTransactionId: string): Promise<BankTransaction | undefined> {
 
-  const response = await xeroClient.accountingApi.getBankTransaction(
-    xeroClient.tenantId, // xeroTenantId
+  const response = await xero.client.accountingApi.getBankTransaction(
+    xero.tenantId, // xeroTenantId
     bankTransactionId, // bankTransactionID
     undefined, // unitdp
     getClientHeaders() // options
@@ -29,7 +28,7 @@ async function getBankTransaction(bearerToken: string, bankTransactionId: string
 }
 
 async function updateBankTransaction(
-  bearerToken: string,
+  xero: XeroContext,
   bankTransactionId: string,
   existingBankTransaction: BankTransaction,
   type?: BankTransactionType,
@@ -48,11 +47,8 @@ async function updateBankTransaction(
     date: date ? date : existingBankTransaction.date
   };
 
-  const xeroClient = createXeroClient(bearerToken);
-  await xeroClient.authenticate();
-
-  xeroClient.accountingApi.updateBankTransaction(
-    xeroClient.tenantId, // xeroTenantId
+  const response = await xero.client.accountingApi.updateBankTransaction(
+    xero.tenantId, // xeroTenantId
     bankTransactionId, // bankTransactionID
     { bankTransactions: [bankTransaction] }, // bankTransactions
     undefined, // unitdp
@@ -64,7 +60,7 @@ async function updateBankTransaction(
 }
 
 export async function updateXeroBankTransaction(
-  bearerToken: string,
+  xero: XeroContext,
   bankTransactionId: string,
   type?: BankTransactionType,
   contactId?: string,
@@ -73,14 +69,14 @@ export async function updateXeroBankTransaction(
   date?: string
 ): Promise<XeroClientResponse<BankTransaction>> {
   try {
-    const existingBankTransaction = await getBankTransaction(bearerToken, bankTransactionId);
+    const existingBankTransaction = await getBankTransaction(xero, bankTransactionId);
 
     if (!existingBankTransaction) {
       throw new Error(`Could not find bank transaction`);
     }
 
     const updatedBankTransaction = await updateBankTransaction(
-      bearerToken,
+      xero,
       bankTransactionId,
       existingBankTransaction,
       type,
