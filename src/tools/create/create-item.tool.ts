@@ -18,7 +18,6 @@ const CreateItemTool = CreateXeroTool(
   "create-item",
   "Create an item in Xero.",
   {
-    bearerToken: z.string(),
     code: z.string(),
     name: z.string(),
     description: z.string().optional(),
@@ -29,7 +28,6 @@ const CreateItemTool = CreateXeroTool(
     inventoryAssetAccountCode: z.string().optional(),
   },
   async ({
-    bearerToken,
     code,
     name,
     description,
@@ -38,8 +36,8 @@ const CreateItemTool = CreateXeroTool(
     salesDetails,
     isTrackedAsInventory,
     inventoryAssetAccountCode,
-  }) => {
-    const result = await createXeroItem(bearerToken, {
+  }, _extra, xero) => {
+    const result = await createXeroItem(xero, {
       code,
       name,
       description,

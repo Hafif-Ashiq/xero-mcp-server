@@ -1,18 +1,17 @@
-import { createXeroClient } from "../clients/xero-client.js";
+
 import { XeroClientResponse } from "../types/tool-response.js";
 import { formatError } from "../helpers/format-error.js";
 import { Item } from "xero-node";
 import { getClientHeaders } from "../helpers/get-client-headers.js";
+import { XeroContext } from "../types/xero-context.js";
 
 async function getItems(
-  bearerToken: string,
+  xero: XeroContext,
   page: number,
 ): Promise<Item[]> {
-  const xeroClient = createXeroClient(bearerToken);
-  await xeroClient.authenticate();
 
-  const items = await xeroClient.accountingApi.getItems(
-    xeroClient.tenantId,
+  const items = await xero.client.accountingApi.getItems(
+    xero.tenantId,
     undefined, // ifModifiedSince
     undefined, // where
     undefined, // order
@@ -26,11 +25,11 @@ async function getItems(
  * List all items from Xero
  */
 export async function listXeroItems(
-  bearerToken: string,
+  xero: XeroContext,
   page: number = 1,
 ): Promise<XeroClientResponse<Item[]>> {
   try {
-    const items = await getItems(bearerToken, page);
+    const items = await getItems(xero, page);
 
     return {
       result: items,

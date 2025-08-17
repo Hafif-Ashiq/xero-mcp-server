@@ -18,7 +18,6 @@ const UpdateItemTool = CreateXeroTool(
   "update-item",
   "Update an item in Xero.",
   {
-    bearerToken: z.string(),
     itemId: z.string(),
     code: z.string(),
     name: z.string(),
@@ -30,7 +29,6 @@ const UpdateItemTool = CreateXeroTool(
     inventoryAssetAccountCode: z.string().optional(),
   },
   async ({
-    bearerToken,
     itemId,
     code,
     name,
@@ -40,9 +38,9 @@ const UpdateItemTool = CreateXeroTool(
     salesDetails,
     isTrackedAsInventory,
     inventoryAssetAccountCode,
-  }) => {
+  }, _extra, xero) => {
     const result = await updateXeroItem(
-      bearerToken,
+      xero,
       itemId,
       {
         code,

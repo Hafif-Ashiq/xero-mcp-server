@@ -1,4 +1,4 @@
-import { createXeroClient } from "../clients/xero-client.js";
+
 import {
   contactDeepLink,
   creditNoteDeepLink,
@@ -8,6 +8,7 @@ import {
   quoteDeepLink,
   billDeepLink,
 } from "../consts/deeplinks.js";
+import { XeroContext } from "../types/xero-context.js";
 
 export enum DeepLinkType {
   CONTACT,
@@ -27,11 +28,8 @@ export enum DeepLinkType {
  * @param bearerToken - Bearer token for Xero authentication
  * @returns
  */
-export const getDeepLink = async (type: DeepLinkType, itemId: string, bearerToken: string) => {
-  const xeroClient = createXeroClient(bearerToken);
-  await xeroClient.authenticate();
-
-  const orgShortCode = await xeroClient.getShortCode();
+export const getDeepLink = async (type: DeepLinkType, itemId: string, xero: XeroContext) => {
+  const orgShortCode = await xero.client.getShortCode();
 
   if (!orgShortCode) {
     throw new Error("Failed to retrieve organisation short code");

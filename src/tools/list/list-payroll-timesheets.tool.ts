@@ -1,20 +1,15 @@
 import { Timesheet } from "xero-node/dist/gen/model/payroll-nz/timesheet.js";
-
-import {
-  listXeroPayrollTimesheets,
-} from "../../handlers/list-xero-timesheets.handler.js";
+import { listXeroPayrollTimesheets } from "../../handlers/list-xero-timesheets.handler.js";
 import { CreateXeroTool } from "../../helpers/create-xero-tool.js";
-import { z } from "zod";
 
 const ListPayrollTimesheetsTool = CreateXeroTool(
   "list-timesheets",
   `List all payroll timesheets in Xero.
 This retrieves comprehensive timesheet details including timesheet IDs, employee IDs, start and end dates, total hours, and the last updated date.`,
   {
-    bearerToken: z.string(),
   },
-  async ({ bearerToken }) => {
-    const response = await listXeroPayrollTimesheets(bearerToken);
+  async (_, _extra, xero) => {
+    const response = await listXeroPayrollTimesheets(xero);
 
     if (response.isError) {
       return {

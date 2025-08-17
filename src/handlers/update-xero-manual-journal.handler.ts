@@ -4,13 +4,13 @@ import {
   ManualJournalLine,
   ManualJournals,
 } from "xero-node";
-import { createXeroClient } from "../clients/xero-client.js";
 import { getClientHeaders } from "../helpers/get-client-headers.js";
 import { XeroClientResponse } from "../types/tool-response.js";
 import { formatError } from "../helpers/format-error.js";
+import { XeroContext } from "../types/xero-context.js";
 
 async function updateManualJournal(
-  bearerToken: string,
+  xero: XeroContext,
   narration: string,
   manualJournalID: string,
   manualJournalLines: ManualJournalLine[],
@@ -20,8 +20,6 @@ async function updateManualJournal(
   url?: string,
   showOnCashBasisReports?: boolean,
 ): Promise<ManualJournal | undefined> {
-  const xeroClient = createXeroClient(bearerToken);
-  await xeroClient.authenticate();
 
   const manualJournal: ManualJournal = {
     narration,
@@ -43,8 +41,8 @@ async function updateManualJournal(
     manualJournals: [manualJournal],
   };
 
-  const response = await xeroClient.accountingApi.updateManualJournal(
-    xeroClient.tenantId,
+  const response = await xero.client.accountingApi.updateManualJournal(
+    xero.tenantId,
     manualJournalID,
     manualJournals,
     undefined,
@@ -55,7 +53,7 @@ async function updateManualJournal(
 }
 
 export async function updateXeroManualJournal(
-  bearerToken: string,
+  xero: XeroContext,
   narration: string,
   manualJournalID: string,
   manualJournalLines: ManualJournalLine[],
@@ -67,7 +65,7 @@ export async function updateXeroManualJournal(
 ): Promise<XeroClientResponse<ManualJournal>> {
   try {
     const updatedManualJournal = await updateManualJournal(
-      bearerToken,
+      xero,
       narration,
       manualJournalID,
       manualJournalLines,

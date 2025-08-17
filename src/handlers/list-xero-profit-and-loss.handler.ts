@@ -3,6 +3,7 @@ import { XeroClientResponse } from "../types/tool-response.js";
 import { formatError } from "../helpers/format-error.js";
 import { getClientHeaders } from "../helpers/get-client-headers.js";
 import { ReportWithRow } from "xero-node";
+import { XeroContext } from "../types/xero-context.js";
 
 // Define the valid timeframe options
 type TimeframeType = "MONTH" | "QUARTER" | "YEAR" | undefined;
@@ -11,7 +12,7 @@ type TimeframeType = "MONTH" | "QUARTER" | "YEAR" | undefined;
  * Internal function to fetch profit and loss data from Xero
  */
 async function fetchProfitAndLoss(
-  bearerToken: string,
+  xero: XeroContext,
   fromDate?: string,
   toDate?: string,
   periods?: number,
@@ -19,11 +20,9 @@ async function fetchProfitAndLoss(
   standardLayout?: boolean,
   paymentsOnly?: boolean,
 ): Promise<ReportWithRow | null> {
-  const xeroClient = createXeroClient(bearerToken);
-  await xeroClient.authenticate();
 
-  const response = await xeroClient.accountingApi.getReportProfitAndLoss(
-    xeroClient.tenantId,
+  const response = await xero.client.accountingApi.getReportProfitAndLoss(
+    xero.tenantId,
     fromDate,
     toDate,
     periods,
@@ -54,7 +53,7 @@ async function fetchProfitAndLoss(
  * @param paymentsOnly Optional boolean to include only accounts with payments
  */
 export async function listXeroProfitAndLoss(
-  bearerToken: string,
+  xero: XeroContext,
   fromDate?: string,
   toDate?: string,
   periods?: number,
@@ -64,7 +63,7 @@ export async function listXeroProfitAndLoss(
 ): Promise<XeroClientResponse<ReportWithRow>> {
   try {
     const profitAndLoss = await fetchProfitAndLoss(
-      bearerToken,
+      xero,
       fromDate,
       toDate,
       periods,

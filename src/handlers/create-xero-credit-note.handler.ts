@@ -1,8 +1,9 @@
-import { createXeroClient } from "../clients/xero-client.js";
+
 import { XeroClientResponse } from "../types/tool-response.js";
 import { formatError } from "../helpers/format-error.js";
 import { CreditNote } from "xero-node";
 import { getClientHeaders } from "../helpers/get-client-headers.js";
+import { XeroContext } from "../types/xero-context.js";
 
 interface CreditNoteLineItem {
   description: string;
@@ -13,13 +14,11 @@ interface CreditNoteLineItem {
 }
 
 async function createCreditNote(
-  bearerToken: string,
+  xero: XeroContext,
   contactId: string,
   lineItems: CreditNoteLineItem[],
   reference: string | undefined,
 ): Promise<CreditNote | undefined> {
-  const xeroClient = createXeroClient(bearerToken);
-  await xeroClient.authenticate();
 
   const creditNote: CreditNote = {
     type: CreditNote.TypeEnum.ACCRECCREDIT,
@@ -32,8 +31,8 @@ async function createCreditNote(
     status: CreditNote.StatusEnum.DRAFT,
   };
 
-  const response = await xeroClient.accountingApi.createCreditNotes(
-    xeroClient.tenantId,
+  const response = await xero.client.accountingApi.createCreditNotes(
+    xero.tenantId,
     {
       creditNotes: [creditNote],
     }, // creditNotes
@@ -50,14 +49,14 @@ async function createCreditNote(
  * Create a new credit note in Xero
  */
 export async function createXeroCreditNote(
-  bearerToken: string,
+  xero: XeroContext,
   contactId: string,
   lineItems: CreditNoteLineItem[],
   reference?: string,
 ): Promise<XeroClientResponse<CreditNote>> {
   try {
     const createdCreditNote = await createCreditNote(
-      bearerToken,
+      xero,
       contactId,
       lineItems,
       reference,

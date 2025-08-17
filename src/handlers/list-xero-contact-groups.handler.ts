@@ -1,24 +1,23 @@
-import { createXeroClient } from "../clients/xero-client.js";
+
 import { ContactGroup } from "xero-node";
 import { XeroClientResponse } from "../types/tool-response.js";
 import { formatError } from "../helpers/format-error.js";
 import { getClientHeaders } from "../helpers/get-client-headers.js";
+import { XeroContext } from "../types/xero-context.js";
 
-async function getContactGroups(bearerToken: string, contactGroupId?: string): Promise<ContactGroup[]> {
-  const xeroClient = createXeroClient(bearerToken);
-  await xeroClient.authenticate();
+async function getContactGroups(xero: XeroContext, contactGroupId?: string): Promise<ContactGroup[]> {
 
   if (contactGroupId) {
-    const response = await xeroClient.accountingApi.getContactGroup(
-      xeroClient.tenantId,
+    const response = await xero.client.accountingApi.getContactGroup(
+      xero.tenantId,
       contactGroupId,
       getClientHeaders(),
     );
     return response.body.contactGroups ?? [];
   }
 
-  const response = await xeroClient.accountingApi.getContactGroups(
-    xeroClient.tenantId,
+  const response = await xero.client.accountingApi.getContactGroups(
+    xero.tenantId,
     undefined, // where
     undefined, // order
     getClientHeaders(),
@@ -29,11 +28,11 @@ async function getContactGroups(bearerToken: string, contactGroupId?: string): P
 /**
  * List all contact groups from Xero. If a contactGroupId is provided, it will return only that contact group.
  */
-export async function listXeroContactGroups(bearerToken: string, contactGroupId?: string): Promise<
+export async function listXeroContactGroups(xero: XeroContext, contactGroupId?: string): Promise<
   XeroClientResponse<ContactGroup[]>
 > {
   try {
-    const contactGroups = await getContactGroups(bearerToken, contactGroupId);
+    const contactGroups = await getContactGroups(xero, contactGroupId);
 
     return {
       result: contactGroups,

@@ -9,11 +9,10 @@ const ApprovePayrollTimesheetTool = CreateXeroTool(
   "approve-timesheet",
   `Approve a payroll timesheet in Xero by its ID.`,
   {
-    bearerToken: z.string(),
     timesheetID: z.string().describe("The ID of the timesheet to approve."),
   },
-  async ({ bearerToken, timesheetID }) => {
-    const response = await approveXeroPayrollTimesheet(bearerToken, timesheetID);
+  async ({ timesheetID }, _extra, xero) => {
+    const response = await approveXeroPayrollTimesheet(xero, timesheetID);
 
     if (response.isError) {
       return {

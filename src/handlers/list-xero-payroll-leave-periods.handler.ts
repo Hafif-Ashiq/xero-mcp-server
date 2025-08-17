@@ -1,7 +1,8 @@
-import { createXeroClient } from "../clients/xero-client.js";
+
 import { XeroClientResponse } from "../types/tool-response.js";
 import { formatError } from "../helpers/format-error.js";
 import { LeavePeriod } from "xero-node/dist/gen/model/payroll-nz/leavePeriod.js";
+import { XeroContext } from "../types/xero-context.js";
 
 interface FetchLeavePeriodParams {
   employeeId?: string;
@@ -12,20 +13,18 @@ interface FetchLeavePeriodParams {
 /**
  * Internal function to fetch employee leave periods from Xero
  */
-async function fetchLeavePeriods(bearerToken: string, {
+async function fetchLeavePeriods(xero: XeroContext, {
   employeeId,
   startDate,
   endDate,
 }: FetchLeavePeriodParams): Promise<LeavePeriod[] | null> {
-  const xeroClient = createXeroClient(bearerToken);
-  await xeroClient.authenticate();
 
   if (!employeeId) {
     throw new Error("Employee ID is required to fetch leave periods");
   }  // After reviewing the SDK documentation, it appears this API call requires different parameters
   // Use parameters that match the SDK's expectations
-  const response = await xeroClient.payrollNZApi.getEmployeeLeavePeriods(
-    xeroClient.tenantId,
+  const response = await xero.client.payrollNZApi.getEmployeeLeavePeriods(
+    xero.tenantId,
     employeeId,
     startDate,
     endDate,
@@ -41,13 +40,13 @@ async function fetchLeavePeriods(bearerToken: string, {
  * @param endDate Optional end date in YYYY-MM-DD format
  */
 export async function listXeroPayrollLeavePeriods(
-  bearerToken: string,
+  xero: XeroContext,
   employeeId: string,
   startDate?: string,
   endDate?: string,
 ): Promise<XeroClientResponse<LeavePeriod[]>> {
   try {
-    const periods = await fetchLeavePeriods(bearerToken, { employeeId, startDate, endDate });
+    const periods = await fetchLeavePeriods(xero, { employeeId, startDate, endDate });
 
     if (!periods) {
       return {

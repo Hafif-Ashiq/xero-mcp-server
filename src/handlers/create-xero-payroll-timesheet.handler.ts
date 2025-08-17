@@ -1,16 +1,15 @@
 import { Timesheet } from "xero-node/dist/gen/model/payroll-nz/timesheet.js";
 
-import { createXeroClient } from "../clients/xero-client.js";
 import { formatError } from "../helpers/format-error.js";
 import { XeroClientResponse } from "../types/tool-response.js";
+import { XeroContext } from "../types/xero-context.js";
 
-async function createTimesheet(bearerToken: string, timesheet: Timesheet): Promise<Timesheet | null> {
-  const xeroClient = createXeroClient(bearerToken);
-  await xeroClient.authenticate();
+async function createTimesheet(xero: XeroContext, timesheet: Timesheet): Promise<Timesheet | null> {
+
 
   // Call the createTimesheet endpoint from the PayrollNZApi
-  const createdTimesheet = await xeroClient.payrollNZApi.createTimesheet(
-    xeroClient.tenantId,
+  const createdTimesheet = await xero.client.payrollNZApi.createTimesheet(
+    xero.tenantId,
     timesheet,
   );
 
@@ -20,11 +19,11 @@ async function createTimesheet(bearerToken: string, timesheet: Timesheet): Promi
 /**
  * Create a payroll timesheet in Xero
  */
-export async function createXeroPayrollTimesheet(bearerToken: string, timesheet: Timesheet): Promise<
+export async function createXeroPayrollTimesheet(xero: XeroContext, timesheet: Timesheet): Promise<
   XeroClientResponse<Timesheet | null>
 > {
   try {
-    const newTimesheet = await createTimesheet(bearerToken, timesheet);
+    const newTimesheet = await createTimesheet(xero, timesheet);
 
     return {
       result: newTimesheet,

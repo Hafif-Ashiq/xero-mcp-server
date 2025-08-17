@@ -15,7 +15,6 @@ const CreatePaymentTool = CreateXeroTool(
  This deep link can be used to view the payment in Xero directly. \
  This link should be displayed to the user.",
   {
-    bearerToken: z.string(),
     invoiceId: z.string().describe("The ID of the invoice to pay"),
     accountId: z
       .string()
@@ -33,8 +32,8 @@ const CreatePaymentTool = CreateXeroTool(
       .optional()
       .describe("Optional payment reference/description"),
   },
-  async ({ bearerToken, invoiceId, accountId, amount, date, reference }) => {
-    const result = await createXeroPayment(bearerToken, {
+  async ({ invoiceId, accountId, amount, date, reference }, _extra, xero) => {
+    const result = await createXeroPayment(xero, {
       invoiceId,
       accountId,
       amount,
@@ -55,7 +54,7 @@ const CreatePaymentTool = CreateXeroTool(
     const payment = result.result;
 
     const deepLink = payment.paymentID
-      ? await getDeepLink(DeepLinkType.PAYMENT, payment.paymentID, bearerToken)
+      ? await getDeepLink(DeepLinkType.PAYMENT, payment.paymentID, xero)
       : null;
 
     return {

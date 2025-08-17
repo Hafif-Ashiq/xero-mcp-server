@@ -10,11 +10,10 @@ const GetPayrollTimesheetTool = CreateXeroTool(
   `Retrieve a single payroll timesheet from Xero by its ID.
 This provides details such as the timesheet ID, employee ID, start and end dates, total hours, and the last updated date.`,
   {
-    bearerToken: z.string(),
     timesheetID: z.string().describe("The ID of the timesheet to retrieve."),
   },
-  async ({ bearerToken, timesheetID }) => {
-    const response = await getXeroPayrollTimesheet(bearerToken, timesheetID);
+  async ({ timesheetID }, _extra, xero) => {
+    const response = await getXeroPayrollTimesheet(xero, timesheetID);
 
     if (response.isError) {
       return {

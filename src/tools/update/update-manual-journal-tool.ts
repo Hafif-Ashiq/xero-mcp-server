@@ -10,7 +10,6 @@ const UpdateManualJournalTool = CreateXeroTool(
   "Update a manual journal in Xero. Only works on draft manual journals.\
   Do not modify line items or parameters that have not been specified by the user.",
   {
-    bearerToken: z.string(),
     narration: z
       .string()
       .describe("Description of manual journal being posted"),
@@ -62,10 +61,10 @@ const UpdateManualJournalTool = CreateXeroTool(
         "Optional boolean to show on cash basis reports, default is true",
       ),
   },
-  async ({ bearerToken, narration, manualJournalID, manualJournalLines, date, lineAmountTypes, status, url, showOnCashBasisReports }) => {
+  async ({ narration, manualJournalID, manualJournalLines, date, lineAmountTypes, status, url, showOnCashBasisReports }, _extra, xero) => {
     try {
       const response = await updateXeroManualJournal(
-        bearerToken,
+        xero,
         narration,
         manualJournalID,
         manualJournalLines,
@@ -92,7 +91,7 @@ const UpdateManualJournalTool = CreateXeroTool(
         ? await getDeepLink(
           DeepLinkType.MANUAL_JOURNAL,
           manualJournal.manualJournalID,
-          bearerToken,
+          xero,
         )
         : null;
 

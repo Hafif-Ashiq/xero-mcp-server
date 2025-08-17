@@ -13,7 +13,6 @@ const CreateManualJournalTool = CreateXeroTool(
   use basic accounting account types pairing when not specified, \
   and make sure journal line pairs have credit and debit balanced.",
   {
-    bearerToken: z.string(),
     narration: z
       .string()
       .describe("Description of manual journal being posted"),
@@ -64,10 +63,10 @@ const CreateManualJournalTool = CreateXeroTool(
         "Optional boolean to show on cash basis reports, default is true",
       ),
   },
-  async ({ bearerToken, narration, manualJournalLines, date, lineAmountTypes, status, url, showOnCashBasisReports }) => {
+  async ({ narration, manualJournalLines, date, lineAmountTypes, status, url, showOnCashBasisReports }, _extra, xero) => {
     try {
       const response = await createXeroManualJournal(
-        bearerToken,
+        xero,
         narration,
         manualJournalLines,
         date,
@@ -93,7 +92,7 @@ const CreateManualJournalTool = CreateXeroTool(
         ? await getDeepLink(
           DeepLinkType.MANUAL_JOURNAL,
           manualJournal.manualJournalID,
-          bearerToken,
+          xero,
         )
         : null;
 

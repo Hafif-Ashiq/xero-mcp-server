@@ -1,8 +1,9 @@
-import { createXeroClient } from "../clients/xero-client.js";
+
 import { XeroClientResponse } from "../types/tool-response.js";
 import { formatError } from "../helpers/format-error.js";
 import { Quote, QuoteStatusCodes } from "xero-node";
 import { getClientHeaders } from "../helpers/get-client-headers.js";
+import { XeroContext } from "../types/xero-context.js";
 
 interface QuoteLineItem {
   description: string;
@@ -11,14 +12,11 @@ interface QuoteLineItem {
   accountCode: string;
   taxType: string;
 }
-
-async function getQuote(bearerToken: string, quoteId: string): Promise<Quote | undefined> {
-  const xeroClient = createXeroClient(bearerToken);
-  await xeroClient.authenticate();
+async function getQuote(xero: XeroContext, quoteId: string): Promise<Quote | undefined> {
 
   // First, get the current quote to check its status
-  const response = await xeroClient.accountingApi.getQuote(
-    xeroClient.tenantId, // tenantId
+  const response = await xero.client.accountingApi.getQuote(
+    xero.tenantId, // tenantId
     quoteId, // quoteId
     getClientHeaders(), // options
   );
@@ -27,7 +25,7 @@ async function getQuote(bearerToken: string, quoteId: string): Promise<Quote | u
 }
 
 async function updateQuote(
-  bearerToken: string,
+  xero: XeroContext,
   quoteId: string,
   lineItems?: QuoteLineItem[],
   reference?: string,
@@ -40,8 +38,6 @@ async function updateQuote(
   expiryDate?: string,
   existingQuote?: Quote
 ): Promise<Quote | undefined> {
-  const xeroClient = createXeroClient(bearerToken);
-  await xeroClient.authenticate();
 
   // Create quote object with only the fields that are being updated
   const quote: Quote = {
@@ -69,8 +65,8 @@ async function updateQuote(
     quote.date = existingQuote.date;
   }
 
-  const response = await xeroClient.accountingApi.updateQuote(
-    xeroClient.tenantId,
+  const response = await xero.client.accountingApi.updateQuote(
+    xero.tenantId,
     quoteId, // quoteId
     {
       quotes: [quote],
@@ -86,7 +82,7 @@ async function updateQuote(
  * Update an existing quote in Xero
  */
 export async function updateXeroQuote(
-  bearerToken: string,
+  xero: XeroContext,
   quoteId: string,
   lineItems?: QuoteLineItem[],
   reference?: string,
@@ -99,7 +95,7 @@ export async function updateXeroQuote(
   expiryDate?: string,
 ): Promise<XeroClientResponse<Quote>> {
   try {
-    const existingQuote = await getQuote(bearerToken, quoteId);
+    const existingQuote = await getQuote(xero, quoteId);
 
     const quoteStatus = existingQuote?.status;
 
@@ -113,7 +109,7 @@ export async function updateXeroQuote(
     }
 
     const updatedQuote = await updateQuote(
-      bearerToken,
+      xero,
       quoteId,
       lineItems,
       reference,

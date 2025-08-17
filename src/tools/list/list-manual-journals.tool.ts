@@ -12,7 +12,6 @@ The response presents a complete overview of all manual journals currently regis
 Ask the user if they want the next page of manual journals after running this tool if 10 manual journals are returned.
 If they want the next page, call this tool again with the next page number, modified date, and the manual journal ID if one was provided in the previous call.`,
   {
-    bearerToken: z.string(),
     manualJournalId: z
       .string()
       .optional()
@@ -26,8 +25,8 @@ If they want the next page, call this tool again with the next page number, modi
     page: z.number().optional().describe("Optional page number for pagination"),
     // TODO: where, order
   },
-  async ({ bearerToken, page, manualJournalId, modifiedAfter }) => {
-    const response = await listXeroManualJournals(bearerToken, page, manualJournalId, modifiedAfter);
+  async ({ page, manualJournalId, modifiedAfter }, _extra, xero) => {
+    const response = await listXeroManualJournals(xero, page, manualJournalId, modifiedAfter);
 
     if (response.isError) {
       return {

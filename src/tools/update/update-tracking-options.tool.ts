@@ -5,20 +5,19 @@ import { updateXeroTrackingOption } from "../../handlers/update-xero-tracking-op
 
 const trackingOptionSchema = z.object({
   trackingOptionId: z.string(),
-  name: z.string().optional(),
-  status: z.enum(["ACTIVE", "ARCHIVED"]).optional()
+  name: z.string().optional().describe("The name of the tracking option."),
+  status: z.enum(["ACTIVE", "ARCHIVED"]).optional().describe("The status of the tracking option.")
 });
 
 const UpdateTrackingOptionsTool = CreateXeroTool(
   "update-tracking-options",
   `Updates tracking options for a tracking category in Xero.`,
   {
-    bearerToken: z.string(),
-    trackingCategoryId: z.string(),
+    trackingCategoryId: z.string().describe("The ID of the tracking category to update."),
     options: z.array(trackingOptionSchema).max(10)
   },
-  async ({ bearerToken, trackingCategoryId, options }) => {
-    const response = await updateXeroTrackingOption(bearerToken, trackingCategoryId, options);
+  async ({ trackingCategoryId, options }, _extra, xero) => {
+    const response = await updateXeroTrackingOption(xero, trackingCategoryId, options);
 
     if (response.isError) {
       return {

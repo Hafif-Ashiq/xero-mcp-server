@@ -1,18 +1,17 @@
-import { createXeroClient } from "../clients/xero-client.js";
+
 import { XeroClientResponse } from "../types/tool-response.js";
 import { formatError } from "../helpers/format-error.js";
 import { getClientHeaders } from "../helpers/get-client-headers.js";
 import { LeaveType } from "xero-node/dist/gen/model/payroll-nz/leaveType.js";
+import { XeroContext } from "../types/xero-context.js";
 
 /**
  * Internal function to fetch leave types from Xero
  */
-async function fetchLeaveTypes(bearerToken: string): Promise<LeaveType[] | null> {
-  const xeroClient = createXeroClient(bearerToken);
-  await xeroClient.authenticate();
+async function fetchLeaveTypes(xero: XeroContext): Promise<LeaveType[] | null> {
 
-  const response = await xeroClient.payrollNZApi.getLeaveTypes(
-    xeroClient.tenantId,
+  const response = await xero.client.payrollNZApi.getLeaveTypes(
+    xero.tenantId,
     undefined, // page
     undefined, // pageSize
     getClientHeaders(),
@@ -24,11 +23,11 @@ async function fetchLeaveTypes(bearerToken: string): Promise<LeaveType[] | null>
 /**
  * List all leave types from Xero Payroll
  */
-export async function listXeroPayrollLeaveTypes(bearerToken: string): Promise<
+export async function listXeroPayrollLeaveTypes(xero: XeroContext): Promise<
   XeroClientResponse<LeaveType[]>
 > {
   try {
-    const leaveTypes = await fetchLeaveTypes(bearerToken);
+    const leaveTypes = await fetchLeaveTypes(xero);
 
     if (!leaveTypes) {
       return {

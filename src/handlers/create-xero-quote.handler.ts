@@ -1,8 +1,9 @@
-import { createXeroClient } from "../clients/xero-client.js";
+
 import { XeroClientResponse } from "../types/tool-response.js";
 import { formatError } from "../helpers/format-error.js";
 import { Quote, QuoteStatusCodes } from "xero-node";
 import { getClientHeaders } from "../helpers/get-client-headers.js";
+import { XeroContext } from "../types/xero-context.js";
 
 interface QuoteLineItem {
   description: string;
@@ -13,7 +14,7 @@ interface QuoteLineItem {
 }
 
 async function createQuote(
-  bearerToken: string,
+  xero: XeroContext,
   quoteNumber: string | undefined,
   reference: string | undefined,
   terms: string | undefined,
@@ -22,8 +23,6 @@ async function createQuote(
   title: string | undefined,
   summary: string | undefined,
 ): Promise<Quote | undefined> {
-  const xeroClient = createXeroClient(bearerToken);
-  await xeroClient.authenticate();
 
   const quote: Quote = {
     quoteNumber: quoteNumber,
@@ -42,8 +41,8 @@ async function createQuote(
     summary: summary,
   };
 
-  const response = await xeroClient.accountingApi.createQuotes(
-    xeroClient.tenantId,
+  const response = await xero.client.accountingApi.createQuotes(
+    xero.tenantId,
     {
       quotes: [quote],
     }, // quotes
@@ -59,7 +58,7 @@ async function createQuote(
  * Create a new quote in Xero
  */
 export async function createXeroQuote(
-  bearerToken: string,
+  xero: XeroContext,
   contactId: string,
   lineItems: QuoteLineItem[],
   reference?: string,
@@ -70,7 +69,7 @@ export async function createXeroQuote(
 ): Promise<XeroClientResponse<Quote>> {
   try {
     const createdQuote = await createQuote(
-      bearerToken,
+      xero,
       quoteNumber,
       reference,
       terms,
