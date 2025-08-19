@@ -7,6 +7,7 @@ import { XeroContext } from "../types/xero-context.js";
 async function getJournals(
     xero: XeroContext,
     modifiedAfter?: string,
+    modifiedBefore?: string,
     paymentsOnly?: boolean,
 ): Promise<Journal[]> {
 
@@ -17,17 +18,50 @@ async function getJournals(
 
         const response = await xero.client.accountingApi.getJournals(
             xero.tenantId,
-            modifiedAfter ? new Date(modifiedAfter) : undefined,
+            undefined,
             offset,
             paymentsOnly,
             getClientHeaders(),
         );
 
-        journals.push(...response.body.journals ?? []);
+        let returnedJournals = response.body.journals ?? [];
 
         if (response.body.journals?.length === 0) {
             break;
         }
+
+        if (modifiedAfter || modifiedBefore) {
+            returnedJournals = returnedJournals.filter(journal => {
+                if (!journal?.journalDate) return false;
+
+                // Parse dates and normalize to start/end of day for comparison
+                const journalDate = new Date(journal.journalDate);
+                const journalDateOnly = new Date(journalDate.getFullYear(), journalDate.getMonth(), journalDate.getDate());
+
+                let afterDate = null;
+                if (modifiedAfter) {
+                    const parsedAfter = new Date(modifiedAfter);
+                    afterDate = new Date(parsedAfter.getFullYear(), parsedAfter.getMonth(), parsedAfter.getDate());
+                }
+
+                let beforeDate = null;
+                if (modifiedBefore) {
+                    const parsedBefore = new Date(modifiedBefore);
+                    beforeDate = new Date(parsedBefore.getFullYear(), parsedBefore.getMonth(), parsedBefore.getDate());
+                }
+
+                if (afterDate && beforeDate) {
+                    return journalDateOnly >= afterDate && journalDateOnly <= beforeDate;
+                } else if (afterDate) {
+                    return journalDateOnly >= afterDate;
+                } else if (beforeDate) {
+                    return journalDateOnly <= beforeDate;
+                }
+                return true;
+            });
+        }
+
+        journals.push(...returnedJournals);
 
         offset += (response.body.journals?.length ?? 0) + 1;
     }
@@ -41,12 +75,14 @@ async function getJournals(
 export async function fetchXeroJournals(
     xero: XeroContext,
     modifiedAfter?: string,
+    modifiedBefore?: string,
     paymentsOnly?: boolean,
 ): Promise<XeroClientResponse<Journal[]>> {
     try {
         const journals = await getJournals(
             xero,
             modifiedAfter,
+            modifiedBefore,
             paymentsOnly,
         );
 

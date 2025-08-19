@@ -18,10 +18,16 @@ The response presents a complete overview of all journals currently registered i
             .describe(
                 "Optional date YYYY-MM-DD to filter journals modified after this date",
             ),
+        modifiedBefore: z
+            .string()
+            .optional()
+            .describe(
+                "Optional date YYYY-MM-DD to filter journals modified before this date",
+            ),
         paymentsOnly: z.boolean().optional().describe("Optional boolean to filter journals to only payments"),
     },
-    async ({ modifiedAfter, paymentsOnly }, _extra, xero) => {
-        const response = await fetchXeroJournals(xero, modifiedAfter, paymentsOnly);
+    async ({ modifiedAfter, modifiedBefore, paymentsOnly }, _extra, xero) => {
+        const response = await fetchXeroJournals(xero, modifiedAfter, modifiedBefore, paymentsOnly);
 
         if (response.isError) {
             return {
