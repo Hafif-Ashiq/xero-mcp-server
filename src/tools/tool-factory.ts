@@ -5,7 +5,7 @@ import { DeleteTools } from "./delete/index.js";
 import { GetTools } from "./get/index.js";
 import { ListTools } from "./list/index.js";
 import { UpdateTools } from "./update/index.js";
-import { FetchTools } from "./fetch/index.js";
+import { DownloadTools } from "./download/index.js";
 
 export function ToolFactory(server: McpServer) {
 
@@ -24,7 +24,7 @@ export function ToolFactory(server: McpServer) {
   UpdateTools.map((tool) => tool()).forEach((tool) =>
     server.tool(tool.name, tool.description, tool.schema, tool.handler),
   );
-  FetchTools.map((tool) => tool()).forEach((tool) =>
+  DownloadTools.map((tool) => tool()).forEach((tool) =>
     server.tool(tool.name, tool.description, tool.schema, tool.handler),
   );
 }
