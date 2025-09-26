@@ -4,8 +4,8 @@ import { CreateXeroTool } from "../../helpers/create-xero-tool.js";
 import { z } from "zod";
 import { fetchXeroJournals } from "../../handlers/fetch-xero-journals.handler.js";
 
-const FetchXeroJournalsTool = CreateXeroTool(
-    "fetch-journals",
+const DownloadXeroJournalsTool = CreateXeroTool(
+    "download-journals",
     `Fetch all journals from Xero.
 Can optionally pass in a date to filter journals modified after that date.
 Can optionally pass in a boolean to filter journals to only payments.
@@ -130,4 +130,4 @@ The response presents a complete overview of all journals currently registered i
     },
 );
 
-export default FetchXeroJournalsTool;
+export default DownloadXeroJournalsTool;

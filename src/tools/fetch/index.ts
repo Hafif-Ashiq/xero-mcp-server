@@ -1,5 +1,5 @@
-import FetchXeroJournalsTool from "./fetch-xero-journals.tool.js";
+import DownloadXeroJournalsTool from "./download-xero-journals.tool.js";
 
-export const FetchTools = [
-    FetchXeroJournalsTool,
+export const DownloadTools = [
+    DownloadXeroJournalsTool,
 ];
