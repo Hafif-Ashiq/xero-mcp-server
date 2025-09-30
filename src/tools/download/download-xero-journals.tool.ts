@@ -106,7 +106,7 @@ The response presents a complete overview of all journals currently registered i
 
         // Save CSV file
 
-        const filename = `xero-journals-${new Date().toISOString().split('T')[0]}.csv`;
+        const filename = `documents/xero-journals-${new Date().toISOString().split('T')[0]}.csv`;
         fs.writeFileSync(filename, csvContent);
 
         return {
