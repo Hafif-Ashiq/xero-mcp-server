@@ -3,6 +3,7 @@ import fs from "fs";
 import { CreateXeroTool } from "../../helpers/create-xero-tool.js";
 import { z } from "zod";
 import { fetchXeroJournals } from "../../handlers/fetch-xero-journals.handler.js";
+import path from "path";
 
 const DownloadXeroJournalsTool = CreateXeroTool(
     "download-journals",
@@ -105,8 +106,12 @@ The response presents a complete overview of all journals currently registered i
         ].join("\n");
 
         // Save CSV file
+        const documentsPath = path.join(process.cwd(), "documents");
+        if (!fs.existsSync(documentsPath)) {
+            fs.mkdirSync(documentsPath, { recursive: true });
+        }
 
-        const filename = `documents/xero-journals-${new Date().toISOString().split('T')[0]}.csv`;
+        const filename = path.join(documentsPath, `xero-journals-${new Date().toISOString().split('T')[0]}.csv`);
         fs.writeFileSync(filename, csvContent);
 
         return {
